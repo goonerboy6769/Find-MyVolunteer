@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Volunteer Finder</title>
+  <img rel="icon" href="volunteer_icon.png" type="image/png">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Times New Roman', Times, serif;
+      background: #0252b4;
+      display: flex;
+      height: 100vh;
+      color: white; /* default text white */
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background: #1f2933;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: white;
+    }
+
+    .sidebar button {
+      border-radius: 15px;
+      background: none;
+      color: white;
+      border: 1px solid #000;
+      padding: 12px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .sidebar button:hover {
+      background: #374151;
+    }
+
+    /* MAIN CONTENT */
+    .content{
+      border-radius: 15px;
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .panel {
+      border-radius: 15px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 1050px;
+      background: #1f2933; /* keep dark panel */
+      color: white; /* panel text white */
+      box-shadow: 0px 0px 15px rgba(0,0,0,0.1);
+    }
+
+    .card, .calendar {
+      background: #1f2933; /* keep dark card */
+      padding: 20px;
+      border-radius: 8px;
+      color: white; /* card text white */
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.05);
+    }
+
+    input, select, button.main-btn {
+      width: 95%;
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #333;
+      color: white; /* input text white */
+    }
+
+    button.main-btn {
+      background: #4caf50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button.main-btn:hover {
+      background: #43a047;
+    }
+
+    .result {
+      margin-top: 15px;
+      padding: 10px;
+      border-left: 4px solid #4caf50;
+      background: #2a2f3b; /* keep dark */
+      color: white; /* result text white */
+    }
+
+    .apply-btn {
+      margin-top: 10px;
+      padding: 8px;
+      width: 100%;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .apply-btn:hover {
+      background: #43a047;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* CALENDAR */
+    .calendar h3 {
+      border-radius: 15px;
+      text-align: center;
+      color: white;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .day {
+      padding: 10px;
+      background: #2a2f3b; /* dark day background */
+      border-radius: 6px;
+      color: white; /* day text white */
+    }
+
+    .today {
+      background: #4caf50;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>Find MyVolunteer</h2>
+  <button onclick="showSection('home')">Home</button>
+  <button onclick="showSection('mission')">Mission Statement</button>
+  <button onclick="showSection('calendar')">Calendar</button>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+
+  <!-- HOME -->
+  <div id="home" class="panel">
+    <div class="card">
+      <h2>Find Volunteer Opportunities</h2>
+
+      <input id="age" type="number" placeholder="Your age">
+      <input id="zipcode" type="text" placeholder="Your ZIP code">
+      <input id="miles" type="number" placeholder="Max distance (miles)">
+
+      <select id="type">
+        <option value="">Select type</option>
+        <option value="medical">Medical</option>
+        <option value="gardening">Gardening</option>
+        <option value="education">Education</option>
+        <option value="animal">Animal Care</option>
+      </select>
+
+      <button class="main-btn" onclick="findOpportunities()">Search</button>
+
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <!-- MISSION -->
+  <div id="mission" class="panel hidden">
+    <div class="card">
+      <h2>Our Mission</h2>
+      <p>
+      Helping people help people. We believe volunteering should be hassle-free. This is a fun project created for students by students! Volunteering should be fun, not stressful. Furthermore, you shouldn't have to pay for opportunities to volunteer, that is why we commit to being a fully free platform from all aspects! Thank you for using our app and have a good day.
+      </p>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="calendar" class="panel hidden">
+    <div class="calendar">
+      <h3 id="monthYear"></h3>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const opportunities = [
+  { name: "Community Hospital Helper", type: "medical", minAge: 16, distance: 8 },
+  { name: "Local Community Garden", type: "gardening", minAge: 12, distance: 3 },
+  { name: "Animal Shelter Assistant", type: "animal", minAge: 18, distance: 15 },
+  { name: "After-School Tutor", type: "education", minAge: 14, distance: 5 }
+];
+
+function findOpportunities() {
+  const age = Number(document.getElementById("age").value);
+  const miles = Number(document.getElementById("miles").value);
+  const type = document.getElementById("type").value;
+  const zipcode = document.getElementById("zipcode").value;
+  const results = document.getElementById("results");
+
+  results.innerHTML = "";
+
+    if (!age) {
+    results.innerHTML = "<p>Please enter your age.</p>";
+    return;
+  }
+  if (!zipcode) {
+    results.innerHTML = "<p>Please enter your ZIP code.</p>";
+    return;
+  }
+  if (!miles) {
+    results.innerHTML = "<p>Please enter your desired range (miles).</p>";
+    return;
+  }
+  if (!type) {   // fix: check type, not age
+    results.innerHTML = "<p>Please select your field type. (e.g. medicine).</p>";
+    return;
+  }
+
+  const matches = opportunities.filter(op =>
+    age >= op.minAge &&
+    op.distance <= miles &&
+    op.type === type
+  );
+
+  if (matches.length === 0) {
+    results.innerHTML = "<p>No matching opportunities found. :(</p>";
+    return;
+  }
+
+  matches.forEach(op => {
+    const div = document.createElement("div");
+    div.className = "result";
+    div.innerHTML = `
+      <strong>${op.name}</strong><br>
+      Type: ${op.type}<br>
+      Distance: ${op.distance} miles<br>
+      Minimum Age: ${op.minAge}<br>
+      ZIP Code: ${zipcode}
+    `;
+    const btn = document.createElement("button");
+    btn.className = "apply-btn";
+    btn.textContent = "Apply Now";
+    btn.addEventListener("click", function() {
+      alert("You applied for: " + op.name);
+    });
+    div.appendChild(btn);
+    results.appendChild(div);
+  });
+}
+
+function showSection(section) {
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("mission").classList.add("hidden");
+  document.getElementById("calendar").classList.add("hidden");
+
+  document.getElementById(section).classList.remove("hidden");
+}
+
+/* REAL-TIME CALENDAR */
+function generateCalendar() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.getDate();
+
+  const monthNames = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
+
+  document.getElementById("monthYear").textContent =
+    `${monthNames[month]} ${year}`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const grid = document.getElementById("calendarGrid");
+  grid.innerHTML = "";
+
+  for (let i = 0; i < firstDay; i++) {
+    grid.appendChild(document.createElement("div"));
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const div = document.createElement("div");
+    div.className = "day";
+    if (day === today) div.classList.add("today");
+    div.textContent = day;
+    grid.appendChild(div);
+  }
+}
+
+generateCalendar();
+</script>
+
+</body>
+</html>
